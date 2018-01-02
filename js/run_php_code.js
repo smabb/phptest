@@ -7,46 +7,91 @@
  * @link       http://github.com/websiteduck/Run-PHP-Code Run PHP Code
  * @license    MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-var themes = {
-	light: [
-		{title: 'Chrome',                theme: 'chrome'},
-		{title: 'Clouds',                theme: 'clouds'},
-		{title: 'Crimson Editor',        theme: 'crimson_editor'},
-		{title: 'Dawn',                  theme: 'dawn'},
-		{title: 'Dreamweaver',           theme: 'dreamweaver'},
-		{title: 'Eclipse',               theme: 'eclipse'},
-		{title: 'GitHub',                theme: 'github'},
-		{title: 'IPlastic',              theme: 'iplastic'},
-		{title: 'Katzenmilch',           theme: 'katzenmilch'},
-		{title: 'Kuroir',                theme: 'kuroir'},
-		{title: 'Solarized Light',       theme: 'solarized_light'},
-		{title: 'SQL Server',            theme: 'sqlserver'},
-		{title: 'TextMate',              theme: 'textmate'},
-		{title: 'Tomorrow',              theme: 'tomorrow'},
-		{title: 'XCode',                 theme: 'xcode'}
-	],
-	dark: [
-		{title: 'Ambiance',              theme: 'ambiance'},
-		{title: 'Chaos',                 theme: 'chaos'},
-		{title: 'Clouds Midnight',       theme: 'clouds_midnight'},
-		{title: 'Cobalt',                theme: 'cobalt'},
-		{title: 'Idle Fingers',          theme: 'idle_fingers'},
-		{title: 'krTheme',               theme: 'kr_theme'},
-		{title: 'Merbivore',             theme: 'merbivore'},
-		{title: 'Merbivore Soft',        theme: 'merbivore_soft'},
-		{title: 'Monokai',               theme: 'monokai'},
-		{title: 'Mono Industrial',       theme: 'mono_industrial'},
-		{title: 'Pastel on dark',        theme: 'pastel_on_dark'},
-		{title: 'Solarized Dark',        theme: 'solarized_dark'},
-		{title: 'Terminal',              theme: 'terminal'},
-		{title: 'Tomorrow Night',        theme: 'tomorrow_night'},
-		{title: 'Tomorrow Night Blue',   theme: 'tomorrow_night_blue'},
-		{title: 'Tomorrow Night Bright', theme: 'tomorrow_night_bright'},
-		{title: 'Tomorrow Night 80s',    theme: 'tomorrow_night_eighties'},
-		{title: 'Twilight',              theme: 'twilight'},
-		{title: 'Vibrant Ink',           theme: 'vibrant_ink'}
-	]
-};
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import _ from 'lodash';
+
+import Main_Menu from './components/main_menu';
+import Code_Pane from './components/code_pane';
+import Resize_Bar from './components/resize_bar';
+import Result_Pane from './components/result_pane';
+
+import menu_items from './menu_items';
+
+class App extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			settings: {
+				run_external    : false,
+				divide_x        : window.innerWidth/2,
+				colorize        : true,
+				theme           : 'twilight',
+				pre_wrap        : false,
+				error_reporting : 'fatal',
+			},
+			light_theme         : true,
+			resizing            : false,
+			window_width        : 0,
+			result_width        : 0,
+			contributors_loaded : false,
+			contributors        : [],
+			code                : '',
+		};
+	}
+
+	menu_click = (key) => {
+		alert(key);
+	};
+
+	editor_event = (event, editor) => {
+		switch (event) {
+			case 'run': this.run_code(); break;
+		}
+	};
+
+	set_code = (value) => this.setState((state) => _.merge({}, state, { code: value }));
+
+	run_code = () => {
+		this.runphp_form['runphp_data'].value = JSON.stringify({
+			action: 'run',
+			settings: {
+				error_reporting: 'none',
+			},
+			code: this.state.code
+		});
+		this.runphp_form.submit();
+	};
+
+	render() {
+		return(
+			<React.Fragment>
+				<Main_Menu 
+					menu_items={menu_items} 
+					on_menu_click={this.menu_click} 
+				/>
+				<Code_Pane 
+					on_editor_event={this.editor_event} 
+					on_code_change={this.set_code}
+					code={this.state.code}
+				/>
+				<Resize_Bar />
+				<Result_Pane />
+				<form ref={(el) => this.runphp_form = el} method="POST" action="" target="result-iframe" data-bind="attr: { target: settings.run_external() ? 'result_external' : 'result_frame' }">
+					<input type="hidden" name="runphp_data" value="" />
+				</form>
+			</React.Fragment>
+		);
+	};
+}
+
+ReactDOM.render(
+	<App />,
+	document.getElementById('root')
+);
+
+/*
 
 ko.bindingHandlers.my_checkbox = {
 	init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
@@ -276,7 +321,7 @@ var View_Model = function() {
 		$('.drop > div, .subdrop > div, #php_search_drop').css('box-shadow', '5px 5px 10px ' + shadeColor(bgcolor, -40));
 		$('.drop div, .subdrop, .drop label').css('backgroundColor', bgcolor);
 		$('.subdrop > div').css('border-top', '1px solid ' + shadeColor(bgcolor, -20));
-		/*$('.drop').css('backgroundColor', bgcolor);*/
+		// $('.drop').css('backgroundColor', bgcolor);
 		$('.button')
 			.css('backgroundColor', bgcolor)
 			.css('border-color', shadeColor(bgcolor,-20))
@@ -418,3 +463,4 @@ $(function() {
 
 	$('#title_bar .drop, #title_bar button').click(function() { setTimeout(function() {vm.editor.focus();}, 50); });
 });
+*/
